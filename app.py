@@ -10,10 +10,11 @@ def main(argv = None):
   if argv == '--logs':
     init_subprocess("server")
     init_subprocess("client")
+    init("gui")
   else:
+    init("gui")
     init("server")
-    init("client")
-    # inicializar GUI
+    init("client") 
 
 if __name__ == "__main__":
 
