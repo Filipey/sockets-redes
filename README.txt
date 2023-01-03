@@ -12,7 +12,7 @@ Comandos para execução:
   virtualenv venv
   source venv/bin/activate
 
-
+** É extremamente importante executar nesta ordem para não ocorrer problemas de conexão **
 pip install -r requirements.txt (Instalar as dependencias de GUI)
 python3 server.py
 python3 client.py

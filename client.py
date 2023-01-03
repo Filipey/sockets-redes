@@ -1,3 +1,4 @@
+import _thread
 from socket import AF_INET, SOCK_STREAM, socket
 from sys import exit
 
@@ -32,14 +33,19 @@ def recieve_message():
     while True:
         try:
             data = s.recv(BUFFER_SIZE)
-            message = data.decode("uft-8")
-            dpg.add_text(f"Resposta do servidor: {message}")
+            message: str = data.decode("utf-8")
+            if message:
+              update_response(message)
+            
         except Exception as error:
             print("Erro na conxeão com o server!")
             print(error)
 
+def update_response(msg):
+  dpg.set_value("response_text", f"Resposta do servidor: {msg}")
 
 def GUI():
+    _thread.start_new_thread(recieve_message, ())
     dpg.create_context()
     dpg.create_viewport(
         title="Apuracao de Strings - Filipe Augusto Santos de Moura",
@@ -63,7 +69,8 @@ def GUI():
             "Digite o texto a ser enviado ao servidor (Caso deseje terminar digite 'exit')"
         )
         dpg.add_input_text(tag="user_input")
-        dpg.add_button(label="Enviar", callback=send_message)
+        dpg.add_button(label="Enviar", callback=send_message, tag="send_button")
+        dpg.add_text("Resposta do servidor: ", tag="response_text")
 
     dpg.setup_dearpygui()
     dpg.show_viewport()
