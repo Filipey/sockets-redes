@@ -1,6 +1,5 @@
 import _thread
 from socket import AF_INET, SOCK_STREAM, socket
-from sys import exit
 
 import dearpygui.dearpygui as dpg
 
@@ -26,10 +25,6 @@ def send_message():
     s.send(msg.encode("utf-8"))
     dpg.set_value("user_input", "")
     dpg.set_value("char_field", "")
-
-    if msg == "exit":
-        s.close()
-        exit()
 
 
 def recieve_message():
