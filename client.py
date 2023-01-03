@@ -87,13 +87,15 @@ def GUI():
     ]
     dpg.create_context()
     dpg.create_viewport(
-        title="Apuracao de Strings - Filipe Augusto Santos de Moura",
+        title="Apuracao de Strings - Filipe Augusto Santos de Moura - CLIENT",
         width=MAX_WIDTH,
         height=MAX_HEIGHT,
         max_width=MAX_WIDTH,
         max_height=MAX_HEIGHT,
         min_width=MAX_WIDTH,
         min_height=MAX_HEIGHT,
+        x_pos=1000,
+        y_pos=200
     )
 
     with dpg.window(
@@ -105,7 +107,7 @@ def GUI():
         no_collapse=True,
     ):
         dpg.add_text(
-            "Digite o texto a ser enviado ao servidor (Caso deseje terminar digite 'exit')"
+            "Digite o texto a ser enviado ao servidor (Caso deseje terminar clique no 'x')"
         )
         dpg.add_input_text(tag="user_input")
         dpg.add_button(label="Enviar", callback=send_message, tag="send_button")

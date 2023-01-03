@@ -17,7 +17,9 @@ pip install -r requirements.txt (Instalar as dependencias de GUI)
 python3 server.py
 python3 client.py
 
-Após executar o Client e Servidor, duas janelas devem aparecer ao usuário, representando cada um dos processos.
+Utilize um terminal diferente para cada processo!
+
+Após executar o Servidor e Cliente, em respectiva ordem, duas janelas devem aparecer ao usuário, representando cada um dos processos.
 
 
 *Foi implementado o desafio proposto, onde o usuário possui algumas opções de análise da String digitada.

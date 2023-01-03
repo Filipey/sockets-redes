@@ -106,13 +106,15 @@ def GUI():
     _thread.start_new_thread(recieve_message, ())
     dpg.create_context()
     dpg.create_viewport(
-        title="Apuracao de Strings - Filipe Augusto Santos de Moura",
+        title="Apuracao de Strings - Filipe Augusto Santos de Moura - SERVER",
         width=MAX_WIDTH,
         height=MAX_HEIGHT,
         max_width=MAX_WIDTH,
         max_height=MAX_HEIGHT,
         min_width=MAX_WIDTH,
         min_height=MAX_HEIGHT,
+        x_pos=100,
+        y_pos=200
     )
 
     with dpg.window(
