@@ -1,61 +1,105 @@
+import _thread
+from enum import Enum
 from socket import AF_INET, SO_REUSEADDR, SOCK_STREAM, SOL_SOCKET, socket
-from threading import Thread
+from sys import exit
 
-HOST = '127.0.0.1'
+import dearpygui.dearpygui as dpg
+
+HOST = "localhost"
 PORT = 20000
 BUFFER_SIZE = 1024
 VOWELS = ["A", "E", "I", "O", "U", "a", "e", "i", "o", "u"]
 
-def on_new_client(client_socket, addr):
-  while True:
-    client, port = addr
-    try:
-      data = client_socket.recv(BUFFER_SIZE)
-      if not data:
-        break
-
-      received_text = data.decode('utf-8')
-      if (received_text == 'exit'):
-        print(f"O Socket do Cliente {client} foi encerrado!")
-        client_socket.close() 
-        return
-      
-      print(f"Mensagem '{received_text}' recebida pelo Cliente {client} na porta {port}")
-      processed_word, vowels, consonants = process_word(received_text)         
-      client_socket.send(f"\nPalavra Reversa: {processed_word}\nNúmero de Vogais: {vowels}\nNúmero de Consoantes: {consonants}".encode("utf-8"))
-
-    except Exception as error:
-      print("Erro na conexão com o cliente!!")
-      print(error)
-      return
-
-def process_word(word: str, param = None) -> list:
-  total_vowels = len([letter for letter in word if letter in VOWELS])
-  total_consonants = len(word) - total_vowels
-
-  print_result = lambda word: print(f"Resultado do processamento:\nForma de processamento: {param}\nPalavra processada: {word}\nNúmero de Vogais: {total_vowels}\nNúmero de Consoantes: {total_consonants}")
-  
-  if not param:
-    reversed_word = word[::-1]
-    print_result(reversed_word)
-    return reversed_word, total_vowels, total_consonants
+MAX_WIDTH = 720
+MAX_HEIGHT = 540
 
 
-def main():
-  try:
-    with socket(AF_INET, SOCK_STREAM) as server_socket:
-      server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-      server_socket.bind((HOST, PORT))
-      while True:
-        server_socket.listen()
-        client_socket, addr = server_socket.accept()
-        print('Conectado ao cliente no endereço:', addr)
-        t = Thread(target=on_new_client, args=(client_socket,addr))
-        t.start()   
-  except Exception as error:
-    print("Erro na execução do servidor!!")
-    print(error)        
-    return             
+class MessageEncode(Enum):
+    REVERSE = 0
+    SPLIT = 1
+    REPLACE = 2
 
-if __name__ == "__main__":   
-  main()
+
+def init_server():
+    s = socket(AF_INET, SOCK_STREAM)
+    s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    s.bind((HOST, PORT))
+    s.listen()
+    conn, addr = s.accept()
+
+    return conn, addr
+
+
+def send_message(msg):
+    processed_word, vowels, consonants, log = process_word(msg)
+    conn.send(
+        f"\n    Palavra Processada: {processed_word}\n    Número de Vogais: {vowels}\n    Número de Consoantes: {consonants}\n".encode(
+            "utf-8"
+        )
+    )
+    draw_log(log + f"\n    Processamento resultante: {processed_word}")
+
+
+def recieve_message():
+    while True:
+        try:
+            data = conn.recv(BUFFER_SIZE)
+            message = data.decode("utf-8")
+            if message == "exit":
+                print(f"O Socker com o client {addr[0]} foi encerrado!")
+                conn.close()
+                exit()
+                return
+            send_message(message)
+        except Exception as error:
+            print("Erro na conexão com o client!")
+            print(error)
+
+
+def process_word(word: str, param=0) -> list:
+    total_vowels = len([letter for letter in word if letter in VOWELS])
+    total_consonants = len(word) - total_vowels
+
+    log = f"Client: {addr[0]}\nPorta: {addr[1]}\nResultado do processamento:\n    Forma de apuração: {MessageEncode(param).name}\n    Palavra recebida: {word}\n    Número de Vogais: {total_vowels}\n    Número de Consoantes: {total_consonants}"
+
+    if param == 0:
+        reversed_word = word[::-1]
+        return reversed_word, total_vowels, total_consonants, log
+
+
+def draw_log(msg: str):
+    dpg.add_text(msg, parent="logs", before="logs")
+
+
+def GUI():
+    _thread.start_new_thread(recieve_message, ())
+    dpg.create_context()
+    dpg.create_viewport(
+        title="Apuracao de Strings - Filipe Augusto Santos de Moura",
+        width=MAX_WIDTH,
+        height=MAX_HEIGHT,
+        max_width=MAX_WIDTH,
+        max_height=MAX_HEIGHT,
+        min_width=MAX_WIDTH,
+        min_height=MAX_HEIGHT,
+    )
+
+    with dpg.window(
+        label="Python + TCP --- SERVER LOGS",
+        width=MAX_WIDTH,
+        height=MAX_HEIGHT,
+        no_move=True,
+        no_close=True,
+        no_collapse=True,
+    ):
+        dpg.add_text("", tag="logs")
+
+    dpg.setup_dearpygui()
+    dpg.show_viewport()
+    dpg.start_dearpygui()
+    dpg.destroy_context()
+
+
+if __name__ == "__main__":
+    conn, addr = init_server()
+    GUI()

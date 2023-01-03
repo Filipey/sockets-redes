@@ -1,32 +1,76 @@
 from socket import AF_INET, SOCK_STREAM, socket
+from sys import exit
 
 import dearpygui.dearpygui as dpg
 
-HOST = '127.0.0.1'
+HOST = "localhost"
 PORT = 20000
 BUFFER_SIZE = 1024
 
-def main(): 
-  try:
-    with socket(AF_INET, SOCK_STREAM) as s:
-      s.connect((HOST, PORT))
-      print(f"Servidor rodando na porta {PORT}")
-      while True:       
-        text = input("Digite o texto a ser enviado ao servidor (Caso deseje terminar digite 'exit'):\n")
-        s.send(text.encode())
-        data = s.recv(BUFFER_SIZE)
-        echo_text = repr(data)
-        echo_text = data.decode('utf-8')
-        print('Recebido do servidor:', echo_text)
-        if (text == 'exit'):
-          print('Encerrando Socket_Client')
-          s.close()
-          break
-  except Exception as error:
-    print("Exceção - Programa será encerrado!")
-    print(error)
-    return
+MAX_WIDTH = 720
+MAX_HEIGHT = 540
 
 
-if __name__ == "__main__":   
-  main()
+def init_client():
+    s = socket(AF_INET, SOCK_STREAM)
+    s.connect((HOST, PORT))
+
+    return s
+
+
+def send_message():
+    msg = dpg.get_value("user_input")
+    s.send(msg.encode("utf-8"))
+    dpg.set_value("user_input", "")
+
+    if msg == "exit":
+        s.close()
+        exit()
+
+
+def recieve_message():
+    while True:
+        try:
+            data = s.recv(BUFFER_SIZE)
+            message = data.decode("uft-8")
+            dpg.add_text(f"Resposta do servidor: {message}")
+        except Exception as error:
+            print("Erro na conxeão com o server!")
+            print(error)
+
+
+def GUI():
+    dpg.create_context()
+    dpg.create_viewport(
+        title="Apuracao de Strings - Filipe Augusto Santos de Moura",
+        width=MAX_WIDTH,
+        height=MAX_HEIGHT,
+        max_width=MAX_WIDTH,
+        max_height=MAX_HEIGHT,
+        min_width=MAX_WIDTH,
+        min_height=MAX_HEIGHT,
+    )
+
+    with dpg.window(
+        label="Python + TCP --- CLIENT",
+        width=MAX_WIDTH,
+        height=MAX_HEIGHT,
+        no_move=True,
+        no_close=True,
+        no_collapse=True,
+    ):
+        dpg.add_text(
+            "Digite o texto a ser enviado ao servidor (Caso deseje terminar digite 'exit')"
+        )
+        dpg.add_input_text(tag="user_input")
+        dpg.add_button(label="Enviar", callback=send_message)
+
+    dpg.setup_dearpygui()
+    dpg.show_viewport()
+    dpg.start_dearpygui()
+    dpg.destroy_context()
+
+
+if __name__ == "__main__":
+    s = init_client()
+    GUI()

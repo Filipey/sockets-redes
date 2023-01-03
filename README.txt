@@ -14,8 +14,10 @@ Comandos para execução:
 
 
 pip install -r requirements.txt (Instalar as dependencias de GUI)
-python3 app.py (Executar a aplicação com o servidor e cliente em background, mantendo somente a GUI visível ao usuário)
-python3 app.py --logs (Executar a aplicação com a janelas de GUI, cliente e servidor visíveis ao usuário)
+python3 server.py
+python3 client.py
+
+Após executar o Client e Servidor, duas janelas devem aparecer ao usuário, representando cada um dos processos.
 
 
 *Foi implementado o desafio proposto, onde o usuário possui algumas opções de análise da String digitada.
