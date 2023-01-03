@@ -56,15 +56,22 @@ def recieve_message():
             print(error)
 
 
-def process_word(word: str, param=0) -> list:
+def process_word(word: str) -> list:
+    word, protocol, selected_chars = word.split("&")
     total_vowels = len([letter for letter in word if letter in VOWELS])
     total_consonants = len(word) - total_vowels
 
-    log = f"Client: {addr[0]}\nPorta: {addr[1]}\nResultado do processamento:\n    Forma de apuração: {MessageEncode(param).name}\n    Palavra recebida: {word}\n    Número de Vogais: {total_vowels}\n    Número de Consoantes: {total_consonants}"
+    log = f"Client: {addr[0]}\nPorta: {addr[1]}\nResultado do processamento:\n    Forma de apuração: {MessageEncode(int(protocol)).name}\n    Palavra recebida: {word}\n    Número de Vogais: {total_vowels}\n    Número de Consoantes: {total_consonants}"
 
-    if param == 0:
+    if protocol == "0":
         reversed_word = word[::-1]
         return reversed_word, total_vowels, total_consonants, log
+    elif protocol == "1":
+        splitted_word = word.split(selected_chars)
+        return splitted_word, total_vowels, total_consonants, log
+    else:
+        replaced_word = word.replace(word, selected_chars)
+        return replaced_word, total_vowels, total_consonants, log
 
 
 def draw_log(msg: str):

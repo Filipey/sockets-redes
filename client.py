@@ -21,8 +21,11 @@ def init_client():
 
 def send_message():
     msg = dpg.get_value("user_input")
+    char_selected = dpg.get_value("char_field")
+    msg = msg + "&" + str(select_string_protocol()) + "&" + char_selected
     s.send(msg.encode("utf-8"))
     dpg.set_value("user_input", "")
+    dpg.set_value("char_field", "")
 
     if msg == "exit":
         s.close()
@@ -35,17 +38,37 @@ def recieve_message():
             data = s.recv(BUFFER_SIZE)
             message: str = data.decode("utf-8")
             if message:
-              update_response(message)
-            
+                update_response(message)
+
         except Exception as error:
             print("Erro na conxeão com o server!")
             print(error)
 
+
 def update_response(msg):
-  dpg.set_value("response_text", f"Resposta do servidor: {msg}")
+    dpg.set_value("response_text", f"Resposta do servidor: {msg}")
+
+
+def select_string_protocol():
+    protocol = dpg.get_value("string_protocol")
+
+    if not protocol or protocol == "Reverter":
+        dpg.hide_item("char_filter")
+        dpg.hide_item("char_field")
+        return 0
+
+    dpg.show_item("char_filter")
+    dpg.show_item("char_field")
+
+    if protocol == "Separar por letras":
+        return 1
+    if protocol == "Substituir letras":
+        return 2
+
 
 def GUI():
     _thread.start_new_thread(recieve_message, ())
+    list_items = ["Reverter", "Separar por letras", "Substituir letras"]
     dpg.create_context()
     dpg.create_viewport(
         title="Apuracao de Strings - Filipe Augusto Santos de Moura",
@@ -70,7 +93,17 @@ def GUI():
         )
         dpg.add_input_text(tag="user_input")
         dpg.add_button(label="Enviar", callback=send_message, tag="send_button")
+        dpg.add_text("Forma de Apuração")
+        dpg.add_listbox(
+            items=list_items,
+            tag="string_protocol",
+            callback=select_string_protocol,
+        )
+        dpg.add_text("Digite os caracteres para filtragem", tag="char_filter")
+        dpg.add_input_text(tag="char_field")
         dpg.add_text("Resposta do servidor: ", tag="response_text")
+        dpg.hide_item("char_filter")
+        dpg.hide_item("char_field")
 
     dpg.setup_dearpygui()
     dpg.show_viewport()
