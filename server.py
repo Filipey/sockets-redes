@@ -1,5 +1,6 @@
 import _thread
 from enum import Enum
+from math import ceil
 from socket import AF_INET, SO_REUSEADDR, SOCK_STREAM, SOL_SOCKET, socket
 from sys import exit
 
@@ -16,8 +17,10 @@ MAX_HEIGHT = 540
 
 class MessageEncode(Enum):
     REVERSE = 0
-    SPLIT = 1
-    REPLACE = 2
+    CLEAR = 1
+    CONCAT = 2
+    STRIP = 3
+    PARTITION = 4
 
 
 def init_server():
@@ -33,7 +36,7 @@ def init_server():
 def send_message(msg):
     processed_word, vowels, consonants, log = process_word(msg)
     conn.send(
-        f"\n    Palavra Processada: {processed_word}\n    Número de Vogais: {vowels}\n    Número de Consoantes: {consonants}\n".encode(
+        f"\n    Resultado processado: {processed_word}\n    Número de Vogais: {vowels}\n    Número de Consoantes: {consonants}\n".encode(
             "utf-8"
         )
     )
@@ -49,8 +52,9 @@ def recieve_message():
                 print(f"O Socker com o client {addr[0]} foi encerrado!")
                 conn.close()
                 exit()
-                return
-            send_message(message)
+            if message:
+                send_message(message)
+
         except Exception as error:
             print("Erro na conexão com o client!")
             print(error)
@@ -58,20 +62,40 @@ def recieve_message():
 
 def process_word(word: str) -> list:
     word, protocol, selected_chars = word.split("&")
-    total_vowels = len([letter for letter in word if letter in VOWELS])
-    total_consonants = len(word) - total_vowels
+    total_vowels, total_consonants = get_vowels_and_consonants(word)
 
-    log = f"Client: {addr[0]}\nPorta: {addr[1]}\nResultado do processamento:\n    Forma de apuração: {MessageEncode(int(protocol)).name}\n    Palavra recebida: {word}\n    Número de Vogais: {total_vowels}\n    Número de Consoantes: {total_consonants}"
+    log = generate_log(word, protocol, total_vowels, total_consonants)
 
     if protocol == "0":
         reversed_word = word[::-1]
         return reversed_word, total_vowels, total_consonants, log
     elif protocol == "1":
         splitted_word = word.split(selected_chars)
+        total_vowels, total_consonants = get_vowels_and_consonants(splitted_word)
+        log = generate_log(word, protocol, total_vowels, total_consonants)
         return splitted_word, total_vowels, total_consonants, log
-    else:
-        replaced_word = word.replace(word, selected_chars)
-        return replaced_word, total_vowels, total_consonants, log
+    elif protocol == "2":
+        concated_word = word + selected_chars
+        total_vowels, total_consonants = get_vowels_and_consonants(concated_word)
+        log = generate_log(word, protocol, total_vowels, total_consonants)
+        return concated_word, total_vowels, total_consonants, log
+    elif protocol == "3":
+        stripped_word = word.replace(" ", "")
+        return stripped_word, total_vowels, total_consonants, log
+    elif protocol == "4":
+        equal_parts = ceil(len(word) / 3)
+        partitioned_word = [word[i:i+equal_parts] for i in range(0, len(word), equal_parts)]
+        return partitioned_word, total_vowels, total_consonants, log
+
+
+def get_vowels_and_consonants(word: str):
+    total_vowels = len([letter for letter in word if letter in VOWELS])
+    total_consonants = len(word) - total_vowels
+    return total_vowels, total_consonants
+
+
+def generate_log(word, protocol, vowels, consonants):
+    return f"Client: {addr[0]}\nPorta: {addr[1]}\nResultado do processamento:\n    Forma de apuração: {MessageEncode(int(protocol)).name}\n    Palavra recebida: {word}\n    Número de Vogais: {vowels}\n    Número de Consoantes: {consonants}"
 
 
 def draw_log(msg: str):

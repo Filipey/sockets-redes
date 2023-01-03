@@ -52,23 +52,39 @@ def update_response(msg):
 def select_string_protocol():
     protocol = dpg.get_value("string_protocol")
 
-    if not protocol or protocol == "Reverter":
+    if (
+        not protocol
+        or protocol == "Reverter"
+        or protocol == "Remover espaços"
+        or protocol == "Particionar em 3"
+    ):
         dpg.hide_item("char_filter")
         dpg.hide_item("char_field")
-        return 0
+        if protocol == "Reverter":
+            return 0
+        if protocol == "Remover espaços":
+            return 3
+        if protocol == "Particionar em 3":
+            return 4
 
     dpg.show_item("char_filter")
     dpg.show_item("char_field")
 
-    if protocol == "Separar por letras":
+    if protocol == "Remover letras":
         return 1
-    if protocol == "Substituir letras":
+    if protocol == "Concatenar":
         return 2
 
 
 def GUI():
     _thread.start_new_thread(recieve_message, ())
-    list_items = ["Reverter", "Separar por letras", "Substituir letras"]
+    list_items = [
+        "Reverter",
+        "Remover letras",
+        "Concatenar",
+        "Remover espaços",
+        "Particionar em 3",
+    ]
     dpg.create_context()
     dpg.create_viewport(
         title="Apuracao de Strings - Filipe Augusto Santos de Moura",
