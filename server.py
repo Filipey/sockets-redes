@@ -83,14 +83,13 @@ def process_word(word: str) -> list:
         stripped_word = word.replace(" ", "")
         return stripped_word, total_vowels, total_consonants, log
     elif protocol == "4":
-        equal_parts = ceil(len(word) / 3)
-        partitioned_word = [word[i:i+equal_parts] for i in range(0, len(word), equal_parts)]
+        partitioned_word = divide_in_three(word)
         return partitioned_word, total_vowels, total_consonants, log
 
 
 def get_vowels_and_consonants(word: str):
     total_vowels = len([letter for letter in word if letter in VOWELS])
-    total_consonants = len(word) - total_vowels
+    total_consonants = len([letter for letter in word if letter not in VOWELS and not letter.isnumeric()])
     return total_vowels, total_consonants
 
 
@@ -101,6 +100,19 @@ def generate_log(word, protocol, vowels, consonants):
 def draw_log(msg: str):
     dpg.add_text(msg, parent="logs", before="logs")
 
+def divide_in_three(word):
+  equal_parts = ceil(len(word) / 3)
+  if len(word) < 3:
+    return "Não é possível dividir em três uma palavra com menos de três caracteres!"
+
+  partitioned_word = [word[i:i+equal_parts] for i in range(0, len(word), equal_parts)]
+
+  if len(word) == 4:
+    replace_char = partitioned_word[1][1]
+    partitioned_word.append(replace_char)
+    replace = partitioned_word[1].replace(replace_char, "")
+    partitioned_word[1] = replace
+  return partitioned_word
 
 def GUI():
     _thread.start_new_thread(recieve_message, ())
